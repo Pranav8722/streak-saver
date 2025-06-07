@@ -1,11 +1,14 @@
-from flask import Flask, render_template, redirect, url_for
-import requests, os, random, string, base64, datetime
+import streamlit as st
+import requests
+import os
+import random
+import string
+import base64
+import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from .env
 load_dotenv()
-
-app = Flask(__name__)
 
 # GitHub credentials
 GITHUB_USER = "Pranav8722"
@@ -29,6 +32,8 @@ def commit_to_github():
         "Accept": "application/vnd.github.v3+json"
     }
 
+    responses = []
+
     for filename, content in generate_dummy_files():
         api_url = f"https://api.github.com/repos/{GITHUB_USER}/{REPO_NAME}/contents/{filename}"
         data = {
@@ -36,19 +41,26 @@ def commit_to_github():
             "content": base64.b64encode(content.encode()).decode()
         }
         response = requests.put(api_url, headers=headers, json=data)
-        print(response.status_code, response.json())
+        responses.append((filename, response.status_code, response.json()))
 
-# Routes
-@app.route('/')
-def home():
-    return render_template("index.html")
+    return responses
 
-@app.route('/commit')
-def commit():
-    commit_to_github()
-    return redirect(url_for("home"))
+# Streamlit App
+st.set_page_config(page_title="Streak Saver", page_icon="🔥")
+st.title("🔥 GitHub Streak Saver")
 
-# Run Flask server
-if __name__ == "__main__":
-    print("Starting Flask server...")
-    app.run(debug=True, use_reloader=False)
+st.markdown("""
+This app commits dummy files to your GitHub repo to help keep your contribution streak alive.
+""")
+
+if st.button("Commit to GitHub"):
+    st.info("Committing files...")
+    result = commit_to_github()
+    for filename, status, resp in result:
+        if status == 201:
+            st.success(f"✅ {filename} committed successfully.")
+        else:
+            st.error(f"❌ Failed to commit {filename}: {resp.get('message')}")
+
+st.markdown("---")
+st.caption("Developed by Pranav8722")
