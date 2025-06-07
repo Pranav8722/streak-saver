@@ -1,12 +1,16 @@
 from flask import Flask, render_template, redirect, url_for
 import requests, os, random, string, base64, datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 app = Flask(__name__)
 
 # GitHub credentials
 GITHUB_USER = "Pranav8722"
 REPO_NAME = "streak-saver"
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Set this environment variable
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # Function to generate dummy text files
 def generate_dummy_files(n=5):
@@ -47,6 +51,4 @@ def commit():
 # Run Flask server
 if __name__ == "__main__":
     print("Starting Flask server...")
-    app.run(debug=True)
-
-
+    app.run(debug=True, use_reloader=False)
